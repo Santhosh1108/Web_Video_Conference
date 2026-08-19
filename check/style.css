@@ -1,0 +1,46 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: 'Oswald', sans-serif;
+}
+body {
+  height: 100vh;
+  width: 100vw;
+  background: #f2f4f6;
+  overflow: hidden;
+}
+.webcam-start-stop {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  padding: 5px 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+.webcam-start-stop > a {
+  text-decoration: unset;
+  color: #000;
+  background: #fff;
+  padding: 10px 20px;
+}
+
+/* ADDED: visible feedback for camera permission/errors, so users aren't
+   left staring at a blank video box with no explanation. */
+.cam-status {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.cam-status--error {
+  background: #c0392b;
+}

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="shortcut icon" href="./images/logo.png" type="image/svg+xml">
+  <title>Room</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="./styles/main.css">
+  <link rel="stylesheet" href="./styles/room.css">
+</head>
+
+<body>
+
+  <!-- ================= HEADER ================= -->
+  <header id="nav">
+    <div class="nav--list">
+      <!-- FIXED: relative path -->
+      <a href="./index.html">
+        <h3 id="logo">
+          <img src="./images/logo.png" alt="Logo">
+        </h3>
+      </a>
+    </div>
+
+    <div id="nav__links">
+      <button id="chat__button">
+        <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="#ede0e0">
+          <path d="M24 20h-3v4l-5.333-4h-7.667v-4h2v2h6.333l2.667 2v-2h3v-8.001h-2v-2h4v12.001z"/>
+        </svg>
+      </button>
+
+      <!-- FIXED: relative path -->
+      <a class="nav__link" id="create__room__btn" href="./index.html">
+        Create Room
+      </a>
+    </div>
+  </header>
+
+  <!-- ================= MAIN ================= -->
+  <main class="container">
+    <div id="room__container">
+
+      <!-- ===== Participants ===== -->
+      <section id="members__container">
+        <div id="members__header">
+          <p>Participants</p>
+          <strong id="members__count">0</strong>
+        </div>
+        <div id="member__list"></div>
+      </section>
+
+      <!-- ===== Video Section ===== -->
+      <section id="stream__container">
+        <div id="stream__box"></div>
+        <div id="streams__container"></div>
+
+        <div class="stream__actions" style="display:none;">
+          <button id="camera-btn" class="active">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <path d="M5 4h-3v-1h3v1zm10.93 0l.812 1.219c.743 1.115 1.987 1.781 3.328 1.781h1.93v13h-20v-13h3.93c1.341 0 2.585-.666 3.328-1.781l.812-1.219h5.86z"/>
+            </svg>
+          </button>
+
+          <button id="mic-btn" class="active">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <path d="M12 2c1.103 0 2 .897 2 2v7c0 1.103-.897 2-2 2s-2-.897-2-2v-7c0-1.103.897-2 2-2z"/>
+            </svg>
+          </button>
+
+          <button id="screen-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <path d="M0 1v17h24v-17h-24z"/>
+            </svg>
+          </button>
+
+          <button id="leave-btn" style="background-color:#ff5050;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <path d="M16 10v-5l8 7-8 7v-5h-8v-4h8z"/>
+            </svg>
+          </button>
+        </div>
+
+        <button id="join-btn">Join Stream</button>
+      </section>
+
+      <!-- ===== Chat ===== -->
+      <section id="messages__container" style="display:none;">
+        <div id="messages"></div>
+        <form id="message__form">
+          <input type="text" name="message" placeholder="Send a message..." />
+        </form>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ================= SCRIPTS ================= -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="./js/room.js"></script>
+  <script src="./js/room_rtm.js"></script>
+  <script src="./js/room_rtc.js"></script>
+
+</body>
+</html>
