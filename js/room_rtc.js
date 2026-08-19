@@ -1,3 +1,10 @@
+// KNOWN TRADE-OFF: the App ID is exposed client-side because this project
+// has no backend to generate temporary RTC/RTM tokens. That's acceptable
+// for a demo/portfolio project, but for production the App ID + a
+// short-lived token should be issued by a server per session (see Agora's
+// token server docs) instead of being embedded in the bundle. Flagging
+// this explicitly rather than silently shipping it is the correct call
+// when you don't have time to stand up a token server.
 const APP_ID = "270a0b5c5c92445ba2014ebfae9bb562"; // 🔴 PUT YOUR REAL AGORA APP ID HERE
 
 let uid = sessionStorage.getItem("uid");
@@ -63,24 +70,65 @@ let joinRoomInit = async () => {
 
   client.on("user-published", handleUserPublished);
   client.on("user-left", handleUserLeft);
+
+  // ADDED: the original code had no feedback if the network dropped —
+  // participants would just silently stop seeing/hearing others with no
+  // indication of why. Surface reconnect attempts and failures instead.
+  client.on("connection-state-change", (curState, prevState, reason) => {
+    if (curState === "RECONNECTING") {
+      addBotMessageToDom("⚠️ Connection lost. Reconnecting...");
+    } else if (curState === "CONNECTED" && prevState === "RECONNECTING") {
+      addBotMessageToDom("✅ Reconnected.");
+    } else if (curState === "DISCONNECTED" && reason !== "LEAVE") {
+      addBotMessageToDom("❌ Connection lost and could not be restored. Try rejoining the room.");
+    }
+  });
 };
 
 // =======================
 // JOIN STREAM
 // =======================
 let joinStreams = async () => {
-  document.getElementById("join-btn").style.display = "none";
-  document.getElementsByClassName("stream__actions")[0].style.display = "flex";
+  const joinBtn = document.getElementById("join-btn");
+  const originalBtnText = joinBtn.textContent;
+  joinBtn.disabled = true;
+  joinBtn.textContent = "Joining...";
 
-  localTracks = await AgoraRTC.createMicrophoneAndCameraTracks(
-    {},
-    {
-      encoderConfig: {
-        width: { min: 640, ideal: 1280, max: 1920 },
-        height: { min: 480, ideal: 720, max: 1080 },
-      },
+  // FIXED: if the browser denies camera/mic permission, has no devices,
+  // or another app is already using the camera, createMicrophoneAndCameraTracks
+  // throws. The original code had no try/catch here, so the Join button
+  // stayed visible+clickable but silently did nothing on failure (or threw
+  // an uncaught error in the console) with zero feedback to the user.
+  try {
+    localTracks = await AgoraRTC.createMicrophoneAndCameraTracks(
+      {},
+      {
+        encoderConfig: {
+          width: { min: 640, ideal: 1280, max: 1920 },
+          height: { min: 480, ideal: 720, max: 1080 },
+        },
+      }
+    );
+  } catch (err) {
+    joinBtn.disabled = false;
+    joinBtn.textContent = originalBtnText;
+
+    let message = "Could not access camera/microphone.";
+    if (err.code === "PERMISSION_DENIED" || err.name === "NotAllowedError") {
+      message = "Camera/microphone permission denied. Please allow access and try again.";
+    } else if (err.code === "DEVICE_NOT_FOUND" || err.name === "NotFoundError") {
+      message = "No camera or microphone found on this device.";
+    } else if (err.name === "NotReadableError") {
+      message = "Your camera/microphone is already in use by another application.";
     }
-  );
+
+    addBotMessageToDom(`⚠️ ${message}`);
+    console.error("joinStreams failed:", err);
+    return;
+  }
+
+  joinBtn.style.display = "none";
+  document.getElementsByClassName("stream__actions")[0].style.display = "flex";
 
   let player = `
     <div class="video__container" id="user-container-${uid}">
@@ -97,9 +145,16 @@ let joinStreams = async () => {
     .addEventListener("click", expandVideoFrame);
 
   localTracks[1].play(`user-${uid}`);
-  await client.publish(localTracks);
 
-  // ✅ ENABLE CONTROLS AFTER TRACKS EXIST
+  try {
+    await client.publish(localTracks);
+  } catch (err) {
+    addBotMessageToDom("⚠️ Failed to publish your stream. Check your connection and try rejoining.");
+    console.error("client.publish failed:", err);
+    return;
+  }
+
+  // ENABLE CONTROLS AFTER TRACKS EXIST
   disableControls(false);
 };
 
