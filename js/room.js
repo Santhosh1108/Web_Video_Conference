@@ -1,81 +1,97 @@
-// Auto-scroll chat to bottom
-let messagesContainer = document.getElementById("messages");
-messagesContainer.scrollTop = messagesContainer.scrollHeight;
+// Responsive meeting UI helpers. WebRTC signaling/media lives in room_rtc.js.
 
-// =======================
-// CHAT TOGGLE
-// =======================
+const messagesContainer = document.getElementById("messages");
+if (messagesContainer) messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
 const chatContainer = document.getElementById("messages__container");
 const chatButton = document.getElementById("chat__button");
 
-let activeChatContainer = false;
+if (chatButton && chatContainer) {
+  chatButton.addEventListener("click", () => {
+    document.body.classList.toggle("chat-open");
+    document.body.classList.remove("members-open");
+  });
+}
 
-chatButton.addEventListener("click", () => {
-  if (activeChatContainer) {
-    chatContainer.style.display = "none";
-  } else {
-    chatContainer.style.display = "block";
+// Optional participant drawer button if added to the HTML.
+const membersButton = document.getElementById("members__button");
+if (membersButton) {
+  membersButton.addEventListener("click", () => {
+    document.body.classList.toggle("members-open");
+    document.body.classList.remove("chat-open");
+  });
+}
+
+// Click outside a mobile drawer to close it.
+document.addEventListener("click", (event) => {
+  if (window.innerWidth > 1100) return;
+  const clickedDrawer =
+    event.target.closest("#members__container") ||
+    event.target.closest("#messages__container");
+  const clickedButton =
+    event.target.closest("#members__button") ||
+    event.target.closest("#chat__button");
+
+  if (!clickedDrawer && !clickedButton) {
+    document.body.classList.remove("members-open", "chat-open");
   }
-  activeChatContainer = !activeChatContainer;
 });
 
-// =======================
-// VIDEO EXPAND / SHRINK LOGIC
-// =======================
-let displayFrame = document.getElementById("stream__box");
-let videoFrames = document.getElementsByClassName("video__container");
+// Escape closes drawers / focused video.
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    document.body.classList.remove("members-open", "chat-open");
+    hideDisplayFrame();
+  }
+});
 
+// Video focus mode. Uses event delegation so dynamically-created WebRTC
+// video cards work without repeatedly attaching listeners.
+const displayFrame = document.getElementById("stream__box");
+const streamsContainer = document.getElementById("streams__container");
 let userIdInDisplayFrame = null;
 
-// Expand video when clicked
-let expandVideoFrame = (e) => {
-  let child = displayFrame.children[0];
+function expandVideoFrame(event) {
+  const frame = event.target.closest(".video__container");
+  if (!frame || !streamsContainer || !displayFrame) return;
 
-  // Move existing expanded video back
-  if (child) {
-    document.getElementById("streams__container").appendChild(child);
+  if (userIdInDisplayFrame === frame.id) {
+    hideDisplayFrame();
+    return;
   }
+
+  const previous = displayFrame.querySelector(".video__container");
+  if (previous) streamsContainer.appendChild(previous);
 
   displayFrame.style.display = "block";
-  displayFrame.appendChild(e.currentTarget);
+  displayFrame.appendChild(frame);
+  userIdInDisplayFrame = frame.id;
 
-  userIdInDisplayFrame = e.currentTarget.id;
+  streamsContainer.querySelectorAll(".video__container").forEach((item) => {
+    item.style.opacity = ".82";
+  });
+}
 
-  // Shrink other videos
-  for (let i = 0; i < videoFrames.length; i++) {
-    if (videoFrames[i].id !== userIdInDisplayFrame) {
-      videoFrames[i].style.height = "100px";
-      videoFrames[i].style.width = "100px";
-    }
-  }
-};
+function hideDisplayFrame() {
+  if (!displayFrame || !streamsContainer) return;
 
-// Attach click listener to each video frame
-let addVideoFrameListeners = () => {
-  for (let i = 0; i < videoFrames.length; i++) {
-    videoFrames[i].addEventListener("click", expandVideoFrame);
-  }
-};
+  const child = displayFrame.querySelector(".video__container");
+  if (child) streamsContainer.prepend(child);
 
-// Call once initially
-addVideoFrameListeners();
-
-// Hide expanded display frame
-let hideDisplayFrame = () => {
+  displayFrame.style.display = "none";
   userIdInDisplayFrame = null;
-  displayFrame.style.display = null;
 
-  let child = displayFrame.children[0];
-  if (child) {
-    document.getElementById("streams__container").appendChild(child);
+  streamsContainer.querySelectorAll(".video__container").forEach((item) => {
+    item.style.opacity = "1";
+  });
+}
+
+streamsContainer?.addEventListener("click", expandVideoFrame);
+displayFrame?.addEventListener("click", hideDisplayFrame);
+
+// Keep the focused frame usable after a resize.
+window.addEventListener("resize", () => {
+  if (window.innerWidth <= 700 && userIdInDisplayFrame) {
+    hideDisplayFrame();
   }
-
-  // Reset all videos to normal size
-  for (let i = 0; i < videoFrames.length; i++) {
-    videoFrames[i].style.height = "300px";
-    videoFrames[i].style.width = "300px";
-  }
-};
-
-// Hide expanded frame when clicking on it
-displayFrame.addEventListener("click", hideDisplayFrame);
+});

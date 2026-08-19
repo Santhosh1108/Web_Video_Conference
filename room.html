@@ -1,106 +1,94 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <link rel="shortcut icon" href="./images/logo.png" type="image/svg+xml">
-  <title>Room</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  <meta name="theme-color" content="#080b12">
+  <meta name="description" content="Responsive WebRTC video conferencing room">
+  <title>MeetFlow — Room</title>
+  <link rel="shortcut icon" href="./images/logo.png" type="image/png">
   <link rel="stylesheet" href="./styles/main.css">
   <link rel="stylesheet" href="./styles/room.css">
 </head>
-
 <body>
-
-  <!-- ================= HEADER ================= -->
   <header id="nav">
     <div class="nav--list">
-      <!-- FIXED: relative path -->
-      <a href="./index.html">
+      <a href="./index.html" aria-label="Back to lobby">
         <h3 id="logo">
-          <img src="./images/logo.png" alt="Logo">
+          <img src="./images/logo.png" alt="">
+          <span>MeetFlow</span>
         </h3>
       </a>
     </div>
-
     <div id="nav__links">
-      <button id="chat__button">
-        <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="#ede0e0">
-          <path d="M24 20h-3v4l-5.333-4h-7.667v-4h2v2h6.333l2.667 2v-2h3v-8.001h-2v-2h4v12.001z"/>
+      <button id="members__button" type="button" aria-label="Participants" title="Participants">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
         </svg>
       </button>
-
-      <!-- FIXED: relative path -->
-      <a class="nav__link" id="create__room__btn" href="./index.html">
-        Create Room
-      </a>
+      <button id="chat__button" type="button" aria-label="Chat" title="Chat">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/>
+        </svg>
+      </button>
+      <a class="nav__link" id="create__room__btn" href="./index.html">New room</a>
     </div>
   </header>
 
-  <!-- ================= MAIN ================= -->
   <main class="container">
     <div id="room__container">
-
-      <!-- ===== Participants ===== -->
-      <section id="members__container">
+      <aside id="members__container" aria-label="Participants">
         <div id="members__header">
           <p>Participants</p>
           <strong id="members__count">0</strong>
         </div>
         <div id="member__list"></div>
-      </section>
+      </aside>
 
-      <!-- ===== Video Section ===== -->
-      <section id="stream__container">
+      <section id="stream__container" aria-label="Video meeting">
         <div id="stream__box"></div>
         <div id="streams__container"></div>
 
-        <div class="stream__actions" style="display:none;">
-          <button id="camera-btn" class="active">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-              <path d="M5 4h-3v-1h3v1zm10.93 0l.812 1.219c.743 1.115 1.987 1.781 3.328 1.781h1.93v13h-20v-13h3.93c1.341 0 2.585-.666 3.328-1.781l.812-1.219h5.86z"/>
-            </svg>
+        <div class="stream__actions" aria-label="Meeting controls">
+          <button id="camera-btn" class="active" type="button" aria-label="Toggle camera" title="Camera">
+            <svg viewBox="0 0 24 24"><path d="M17 10V5H3v14h14v-5l4 4V6l-4 4z"/></svg>
           </button>
-
-          <button id="mic-btn" class="active">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-              <path d="M12 2c1.103 0 2 .897 2 2v7c0 1.103-.897 2-2 2s-2-.897-2-2v-7c0-1.103.897-2 2-2z"/>
-            </svg>
+          <button id="mic-btn" class="active" type="button" aria-label="Toggle microphone" title="Microphone">
+            <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21H8v2h8v-2h-3v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
           </button>
-
-          <button id="screen-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-              <path d="M0 1v17h24v-17h-24z"/>
-            </svg>
+          <button id="screen-btn" type="button" aria-label="Share screen" title="Share screen">
+            <svg viewBox="0 0 24 24"><path d="M21 3H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7v2H7v2h10v-2h-3v-2h7a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 14H3V5h18v12z"/></svg>
           </button>
-
-          <button id="leave-btn" style="background-color:#ff5050;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-              <path d="M16 10v-5l8 7-8 7v-5h-8v-4h8z"/>
-            </svg>
+          <button id="leave-btn" type="button" aria-label="Leave meeting" title="Leave meeting">
+            <svg viewBox="0 0 24 24"><path d="M16 10V6.5L22 12l-6 5.5V14H9v-4h7zM2 5h2v14H2V5z"/></svg>
           </button>
         </div>
 
-        <button id="join-btn">Join Stream</button>
+        <button id="join-btn" type="button">Join meeting</button>
       </section>
 
-      <!-- ===== Chat ===== -->
-      <section id="messages__container" style="display:none;">
+      <aside id="messages__container" aria-label="Chat">
         <div id="messages"></div>
-        <form id="message__form">
-          <input type="text" name="message" placeholder="Send a message..." />
+        <form id="message__form" autocomplete="off">
+          <input type="text" name="message" maxlength="2000" placeholder="Message everyone…" aria-label="Chat message">
         </form>
-      </section>
-
+      </aside>
     </div>
   </main>
 
-  <!-- ================= SCRIPTS ================= -->
   <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const query = new URLSearchParams(location.search);
+    const roomId = query.get("room") || "main";
+    const uid = sessionStorage.getItem("uid") || crypto.randomUUID();
+    const displayName = sessionStorage.getItem("display_name") || "Guest";
+    sessionStorage.setItem("uid", uid);
+  </script>
   <script src="./js/room.js"></script>
   <script src="./js/room_rtm.js"></script>
   <script src="./js/room_rtc.js"></script>
-
 </body>
 </html>
