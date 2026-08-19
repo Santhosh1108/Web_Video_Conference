@@ -28,8 +28,13 @@
           </h3>
         </a>
       </div>
+
+      <!-- FIXED: original file had TWO elements with id="nav__links".
+           Duplicate IDs are invalid HTML and break any CSS/JS selector
+           that targets #nav__links (only the first match ever resolves).
+           Merged into a single container below. -->
       <div id="nav__links">
-        <a class="nav__link" href="AGORA/index.html" >
+        <a class="nav__link" href="AGORA/index.html">
           USING AGORA APP CONFERENCE
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -43,9 +48,8 @@
             />
           </svg>
         </a>
-        
-      <div id="nav__links">
-        <a class="nav__link" href="check/index.html" >
+
+        <a class="nav__link" href="check/index.html">
           CHECK CAMERA
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -59,6 +63,7 @@
             />
           </svg>
         </a>
+
         <a class="nav__link" id="create__room__btn" href="lobby.html">
           Create Room
           <svg
@@ -89,6 +94,7 @@
               type="text"
               name="name"
               required
+              maxlength="30"
               placeholder="Enter your display name..."
             />
           </div>
@@ -99,6 +105,7 @@
               type="text"
               name="room"
               required
+              maxlength="40"
               placeholder="Enter room name..."
             />
           </div>
