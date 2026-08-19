@@ -23,14 +23,22 @@ $("#join-form").submit(async function (e) {
     $("#join").attr("disabled", true);
     try {
         options.appid = $("#appid").val();
-        options.token = $("#token").val();
+        // FIXED: the form has no #token input, so this always read as
+        // undefined. Removed the dead reference. For an App-Certificate-
+        // enabled Agora project, a real token would need to come from a
+        // token server, not a client-side field anyway.
         options.channel = $("#channel").val();
         options.accountName = $('#accountName').val();
         await join();
+        // FIXED: leave button should only enable after a *successful* join,
+        // not unconditionally in `finally` (which ran even on failure).
+        $("#leave").attr("disabled", false);
     } catch (error) {
         console.error(error);
-    } finally {
-        $("#leave").attr("disabled", false);
+        // FIXED: previously if join() threw, the Join button stayed
+        // disabled forever with no way to retry except refreshing the page.
+        $("#join").attr("disabled", false);
+        alert("Failed to join the room. Check your AppID/Channel and try again.");
     }
 })
 
@@ -86,6 +94,39 @@ async function leave() {
     console.log("client leaves channel success");
 }
 
+// SECURITY FIX: `singleMember` is a display name typed by another user
+// (accountName) and was being inserted directly into innerHTML via string
+// concatenation in THREE places (initial load, MemberJoined, MemberLeft) —
+// e.g. a name like <img src=x onerror=alert(document.cookie)> would
+// execute in every other participant's browser (stored XSS). It was also
+// used unescaped inside an `id="remoteAudio-${singleMember}"` attribute,
+// so a name containing a quote character would break the markup outright.
+// Centralizing rendering into one escaped helper fixes both issues and
+// removes the triplicated code.
+function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = String(str ?? "");
+    return div.innerHTML;
+}
+
+function renderMemberList(memberNames, accountName) {
+    var rows = memberNames
+        .filter(function (singleMember) { return singleMember != accountName; })
+        .map(function (singleMember) {
+            var safeName = escapeHtml(singleMember);
+            return `<li class="mt-2">
+                  <div class="row">
+                      <p>${safeName}</p>
+                   </div>
+                   <div class="mb-4">
+                     <button class="text-white btn btn-control mx-3 remoteMicrophone micOn" data-peer-id="${safeName}">Toggle Mic</button>
+                     <button class="text-white btn btn-control remoteCamera camOn" data-peer-id="${safeName}">Toggle Video</button>
+                    </div>
+                 </li>`;
+        });
+    $("#insert-all-users").html(rows.join(""));
+}
+
 async function RTMJoin() { // Create Agora RTM client
     const clientRTM = AgoraRTM.createInstance($("#appid").val(), {enableLogUpload: false});
     var accountName = $('#accountName').val();
@@ -103,25 +144,16 @@ async function RTMJoin() { // Create Agora RTM client
                 console.log("------------------------------");
                 console.log("All members in the channel are as follows: ");
                 console.log(memberNames);
-                var newHTML = $.map(memberNames, function (singleMember) {
-                    if (singleMember != accountName) {
-                        return(`<li class="mt-2">
-                  <div class="row">
-                      <p>${singleMember}</p>
-                   </div>
-                   <div class="mb-4">
-                     <button class="text-white btn btn-control mx-3 remoteMicrophone micOn" id="remoteAudio-${singleMember}">Toggle Mic</button>
-                     <button class="text-white btn btn-control remoteCamera camOn" id="remoteVideo-${singleMember}">Toggle Video</button>
-                    </div>
-                 </li>`);
-                    }
-                });
-                $("#insert-all-users").html(newHTML.join(""));
+                renderMemberList(memberNames, accountName);
             });
             // Send peer-to-peer message for audio muting and unmuting
             $(document).on('click', '.remoteMicrophone', function () {
-                fullDivId = $(this).attr('id');
-                peerId = fullDivId.substring(fullDivId.indexOf("-") + 1);
+                // FIXED: previously parsed the peer id out of the element's
+                // `id` attribute (which held the raw, unescaped member
+                // name). Now reads it from a data attribute set from the
+                // already-escaped name, and declares the variable properly
+                // instead of leaking it onto the global scope.
+                let peerId = $(this).data('peer-id');
                 console.log("Remote microphone button pressed.");
                 let peerMessage = "audio";
                 clientRTM.sendMessageToPeer({
@@ -136,8 +168,7 @@ async function RTMJoin() { // Create Agora RTM client
             });
             // Send peer-to-peer message for video muting and unmuting
             $(document).on('click', '.remoteCamera', function () {
-                fullDivId = $(this).attr('id');
-                peerId = fullDivId.substring(fullDivId.indexOf("-") + 1);
+                let peerId = $(this).data('peer-id');
                 console.log("Remote video button pressed.");
                 let peerMessage = "video";
                 clientRTM.sendMessageToPeer({
@@ -155,27 +186,32 @@ async function RTMJoin() { // Create Agora RTM client
                 text
             }, peerId) {
                 console.log(peerId + " muted/unmuted your " + text);
+                // FIXED: selectors updated to match the new
+                // data-peer-id="..." attribute (see renderMemberList) now
+                // that the raw member name is no longer used inside an id.
                 if (text == "audio") {
                     console.log("Remote video toggle reached with " + peerId);
-                    if ($("#remoteAudio-" + peerId).hasClass('micOn')) {
+                    let micBtn = $(`.remoteMicrophone[data-peer-id="${peerId}"]`);
+                    if (micBtn.hasClass('micOn')) {
                         localTracks.audioTrack.setEnabled(false);
                         console.log("Remote Audio Muted for: " + peerId);
-                        $("#remoteAudio-" + peerId).removeClass('micOn');
+                        micBtn.removeClass('micOn');
                     } else {
                         localTracks.audioTrack.setEnabled(true);
                         console.log("Remote Audio Unmuted for: " + peerId);
-                        $("#remoteAudio-" + peerId).addClass('micOn');
+                        micBtn.addClass('micOn');
                     }
                 } else if (text == "video") {
                     console.log("Remote video toggle reached with " + peerId);
-                    if ($("#remoteVideo-" + peerId).hasClass('camOn')) {
+                    let camBtn = $(`.remoteCamera[data-peer-id="${peerId}"]`);
+                    if (camBtn.hasClass('camOn')) {
                         localTracks.videoTrack.setEnabled(false);
                         console.log("Remote Video Muted for: " + peerId);
-                        $("#remoteVideo-" + peerId).removeClass('camOn');
+                        camBtn.removeClass('camOn');
                     } else {
                         localTracks.videoTrack.setEnabled(true);
                         console.log("Remote Video Unmuted for: " + peerId);
-                        $("#remoteVideo-" + peerId).addClass('camOn');
+                        camBtn.addClass('camOn');
                     }
                 }
             })
@@ -184,20 +220,7 @@ async function RTMJoin() { // Create Agora RTM client
                 channel.getMembers().then((memberNames) => {
                     console.log("New member joined so updated list is: ");
                     console.log(memberNames);
-                    var newHTML = $.map(memberNames, function (singleMember) {
-                        if (singleMember != accountName) {
-                            return(`<li class="mt-2">
-                      <div class="row">
-                          <p>${singleMember}</p>
-                       </div>
-                       <div class="mb-4">
-                         <button class="text-white btn btn-control mx-3 remoteMicrophone micOn" id="remoteAudio-${singleMember}">Toggle Mic</button>
-                         <button class="text-white btn btn-control remoteCamera camOn" id="remoteVideo-${singleMember}">Toggle Video</button>
-                        </div>
-                     </li>`);
-                        }
-                    });
-                    $("#insert-all-users").html(newHTML.join(""));
+                    renderMemberList(memberNames, accountName);
                 });
             })
             // Display channel member left updated users
@@ -205,27 +228,23 @@ async function RTMJoin() { // Create Agora RTM client
                 channel.getMembers().then((memberNames) => {
                     console.log("A member left so updated list is: ");
                     console.log(memberNames);
-                    var newHTML = $.map(memberNames, function (singleMember) {
-                        if (singleMember != accountName) {
-                            return(`<li class="mt-2">
-                      <div class="row">
-                          <p>${singleMember}</p>
-                       </div>
-                       <div class="mb-4">
-                         <button class="text-white btn btn-control mx-3 remoteMicrophone micOn" id="remoteAudio-${singleMember}">Toggle Mic</button>
-                         <button class="text-white btn btn-control remoteCamera camOn" id="remoteVideo-${singleMember}">Toggle Video</button>
-                        </div>
-                     </li>`);
-                        }
-                    });
-                    $("#insert-all-users").html(newHTML.join(""));
+                    renderMemberList(memberNames, accountName);
                 });
             });
         }).catch(error => {
+            // Handles failures to join the RTM *channel* (login already succeeded).
             console.log('AgoraRTM client channel join failed: ', error);
-        }).catch(err => {
-            console.log('AgoraRTM client login failure: ', err);
+            alert("Joined RTM, but failed to join the channel. Please try again.");
         });
+        // FIXED: this .catch() used to be chained after channel.join()'s
+        // .catch(), which meant it could only ever fire if the *channel
+        // join* error handler itself threw — it never actually caught a
+        // failed clientRTM.login(). A login failure was an unhandled
+        // promise rejection with zero user feedback. Attached directly to
+        // the login() promise now.
+    }).catch(err => {
+        console.log('AgoraRTM client login failure: ', err);
+        alert("Failed to log in to chat/presence service. Please try again.");
     });
     // Logout
     document.getElementById("leave").onclick = async function () {
