@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a0c10">
+  <meta name="description" content="Responsive WebRTC video conferencing room">
+  <title>MeetFlow — Room</title>
+  <link rel="shortcut icon" href="./images/logo.png" type="image/png">
+  <link rel="stylesheet" href="./styles/main.css">
+  <link rel="stylesheet" href="./styles/room.css">
+</head>
+<body>
+  <header id="nav">
+    <div class="nav--list">
+      <a href="./index.html" aria-label="Back to lobby">
+        <h3 id="logo">
+          <svg class="logo-mark" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect width="32" height="32" rx="9" fill="url(#g2)" />
+            <rect x="8" y="15" width="3" height="9" rx="1.5" fill="#0a0c10" />
+            <rect x="14.5" y="9" width="3" height="15" rx="1.5" fill="#0a0c10" />
+            <rect x="21" y="12" width="3" height="12" rx="1.5" fill="#0a0c10" />
+            <defs>
+              <linearGradient id="g2" x1="0" y1="0" x2="32" y2="32">
+                <stop stop-color="#f5a623" /><stop offset="1" stop-color="#2dd4d6" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <span>MeetFlow</span>
+        </h3>
+      </a>
+      <span class="status-pill" id="status-pill" data-state="connecting">
+        <span class="status-dot"></span><span id="status-label">Connecting…</span>
+      </span>
+      <span class="room-code" id="room-code-pill">
+        <span id="room-code-text"></span>
+        <button type="button" id="copy-link-btn" title="Copy invite link" aria-label="Copy invite link">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+        </button>
+      </span>
+    </div>
+    <div id="nav__links">
+      <button id="members__button" class="icon-btn" type="button" aria-label="Participants" title="Participants">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <span class="badge-dot" id="members-badge" hidden>0</span>
+      </button>
+      <button id="chat__button" class="icon-btn" type="button" aria-label="Chat" title="Chat">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>
+        <span class="badge-dot" id="chat-badge" hidden>0</span>
+      </button>
+      <a class="nav__link" id="create__room__btn" href="./index.html">New room</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="room__container">
+      <aside id="members__container" aria-label="Participants">
+        <div id="members__header">
+          <p>Participants</p>
+          <strong id="members__count">0</strong>
+        </div>
+        <div id="member__list"></div>
+      </aside>
+
+      <section id="stream__container" aria-label="Video meeting">
+
+        <!-- Pre-join preview: camera check + device selection before entering the call -->
+        <div id="prejoin">
+          <div id="prejoin__card">
+            <div id="prejoin__preview">
+              <video id="preview-video" autoplay playsinline muted></video>
+              <div id="prejoin__no-cam">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 10V5H3v14h14v-5l4 4V6l-4 4z"/><path d="M1 1l22 22" stroke="#ff5c5c"/></svg>
+                <p id="prejoin__no-cam-text">Waiting for camera access…</p>
+              </div>
+              <button type="button" id="preview-mic-btn" class="preview-chip" aria-pressed="true" title="Toggle microphone">
+                <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21H8v2h8v-2h-3v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
+              </button>
+              <button type="button" id="preview-cam-btn" class="preview-chip" aria-pressed="true" title="Toggle camera">
+                <svg viewBox="0 0 24 24"><path d="M17 10V5H3v14h14v-5l4 4V6l-4 4z"/></svg>
+              </button>
+              <div id="preview-meter" title="Mic level"><span></span></div>
+            </div>
+
+            <div id="prejoin__panel">
+              <h2>Ready to join?</h2>
+              <p id="prejoin__room-line">Room <strong id="prejoin__room-name"></strong></p>
+
+              <label class="device-label" for="camera-select">Camera</label>
+              <select id="camera-select" class="device-select"></select>
+
+              <label class="device-label" for="mic-select">Microphone</label>
+              <select id="mic-select" class="device-select"></select>
+
+              <label class="mirror-toggle">
+                <input type="checkbox" id="mirror-toggle" checked>
+                Mirror my video
+              </label>
+
+              <button id="join-btn" type="button" class="btn btn-primary" style="width:100%;margin-top:6px">
+                Join meeting
+              </button>
+              <p id="prejoin__hint">Your camera and mic stay off to everyone else until you join.</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="stream__box"></div>
+        <div id="streams__container"></div>
+        <div id="reactions__layer" aria-hidden="true"></div>
+
+        <div class="stream__actions" aria-label="Meeting controls">
+          <button id="camera-btn" class="active" type="button" aria-label="Toggle camera" title="Camera (V)">
+            <svg viewBox="0 0 24 24"><path d="M17 10V5H3v14h14v-5l4 4V6l-4 4z"/></svg>
+          </button>
+          <button id="mic-btn" class="active" type="button" aria-label="Toggle microphone" title="Microphone (M)">
+            <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21H8v2h8v-2h-3v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
+          </button>
+          <button id="screen-btn" type="button" aria-label="Share screen" title="Share screen (S)">
+            <svg viewBox="0 0 24 24"><path d="M21 3H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7v2H7v2h10v-2h-3v-2h7a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 14H3V5h18v12z"/></svg>
+          </button>
+
+          <div class="reactions-wrap">
+            <button id="reactions-btn" type="button" aria-label="Send a reaction" title="Reactions (R)" aria-haspopup="true">
+              <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zM8 10.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm8 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM7.5 14c.83 1.79 2.44 3 4.5 3s3.67-1.21 4.5-3H7.5z"/></svg>
+            </button>
+            <div class="reactions-popover" id="reactions-popover" role="menu">
+              <button type="button" data-emoji="👍">👍</button>
+              <button type="button" data-emoji="🎉">🎉</button>
+              <button type="button" data-emoji="❤️">❤️</button>
+              <button type="button" data-emoji="😂">😂</button>
+              <button type="button" data-emoji="👏">👏</button>
+              <button type="button" data-emoji="✋">✋</button>
+            </div>
+          </div>
+
+          <button id="fullscreen-btn" type="button" aria-label="Toggle fullscreen" title="Fullscreen focused tile (F)">
+            <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+          </button>
+
+          <div class="settings-wrap">
+            <button id="settings-btn" type="button" aria-label="Device settings" title="Device settings" aria-haspopup="true">
+              <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.36.32.68.55.94"/></svg>
+            </button>
+            <div class="settings-popover" id="settings-popover" role="menu">
+              <label class="device-label" for="camera-select-live">Camera</label>
+              <select id="camera-select-live" class="device-select"></select>
+              <label class="device-label" for="mic-select-live">Microphone</label>
+              <select id="mic-select-live" class="device-select"></select>
+              <label class="mirror-toggle">
+                <input type="checkbox" id="mirror-toggle-live" checked>
+                Mirror my video
+              </label>
+            </div>
+          </div>
+
+          <button id="leave-btn" type="button" aria-label="Leave meeting" title="Leave meeting">
+            <svg viewBox="0 0 24 24"><path d="M16 10V6.5L22 12l-6 5.5V14H9v-4h7zM2 5h2v14H2V5z"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <aside id="messages__container" aria-label="Chat">
+        <div id="messages"></div>
+        <form id="message__form" autocomplete="off">
+          <input type="text" name="message" maxlength="2000" placeholder="Message everyone…" aria-label="Chat message">
+        </form>
+      </aside>
+    </div>
+  </main>
+
+  <div id="toast__stack" aria-live="polite"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const query = new URLSearchParams(location.search);
+    const roomId = query.get("room") || "main";
+    const uid = sessionStorage.getItem("uid") || crypto.randomUUID();
+    const displayName = (query.get("name") || sessionStorage.getItem("display_name") || "Guest").slice(0, 30);
+    sessionStorage.setItem("uid", uid);
+    sessionStorage.setItem("display_name", displayName);
+  </script>
+  <script src="./js/room.js"></script>
+  <script src="./js/room_rtm.js"></script>
+  <script src="./js/room_rtc.js"></script>
+</body>
+</html>

@@ -36,10 +36,12 @@ function removeMemberFromDom(memberUid) {
   if (count) count.textContent = document.querySelectorAll(".member__wrapper").length;
 }
 
+window.removeMemberFromDom = removeMemberFromDom;
 socket.on("members-updated", updateMembers);
 
-socket.on("chat-message", ({ displayName: sender, message }) => {
+socket.on("chat-message", ({ displayName: sender, message, uid: senderUid }) => {
   addMessageToDom(sender, message);
+  if (senderUid !== uid) window.bumpUnreadChat?.();
 });
 
 function sendMessage(e) {
@@ -99,6 +101,4 @@ function addBotMessageToDom(message) {
   outer.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-window.addEventListener("beforeunload", () => {
-  try { socket.emit("leave-room"); } catch {}
-});
+window.addBotMessageToDom = addBotMessageToDom;

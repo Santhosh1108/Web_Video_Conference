@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="shortcut icon" href="../images/logo.png" type="image/png">
+  <title>MeetFlow — Camera &amp; Mic Check</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <link rel="stylesheet" href="../styles/main.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header id="nav">
+    <div class="nav--list">
+      <a href="../index.html">
+        <h3 id="logo">
+          <svg class="logo-mark" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect width="32" height="32" rx="9" fill="url(#g3)" />
+            <rect x="8" y="15" width="3" height="9" rx="1.5" fill="#0a0c10" />
+            <rect x="14.5" y="9" width="3" height="15" rx="1.5" fill="#0a0c10" />
+            <rect x="21" y="12" width="3" height="12" rx="1.5" fill="#0a0c10" />
+            <defs><linearGradient id="g3" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#f5a623" /><stop offset="1" stop-color="#2dd4d6" /></linearGradient></defs>
+          </svg>
+          <span>MeetFlow</span>
+        </h3>
+      </a>
+    </div>
+    <div id="nav__links">
+      <a class="nav__link" id="create__room__btn" href="../index.html">Back to lobby</a>
+    </div>
+  </header>
+
+  <main id="check__page">
+    <div id="check__card">
+      <div id="check__preview">
+        <video id="video" autoplay playsinline muted></video>
+        <p id="cam-status" class="cam-status"></p>
+        <div id="level-meter" title="Mic level"><span></span></div>
+      </div>
+
+      <div id="check__panel">
+        <h1>Test your camera &amp; mic</h1>
+        <p class="check__lede">Make sure everything looks and sounds right before you join a call.</p>
+
+        <label class="device-label" for="camera-select">Camera</label>
+        <select id="camera-select" class="device-select"></select>
+
+        <label class="device-label" for="mic-select">Microphone</label>
+        <select id="mic-select" class="device-select"></select>
+
+        <div class="webcam-start-stop">
+          <button type="button" class="btn btn-primary" id="start-btn">Start test</button>
+          <button type="button" class="btn btn-outline" id="stop-btn">Stop</button>
+        </div>
+
+        <dl id="stream-stats" hidden>
+          <div><dt>Resolution</dt><dd id="stat-resolution">—</dd></div>
+          <div><dt>Frame rate</dt><dd id="stat-fps">—</dd></div>
+          <div><dt>Mic input</dt><dd id="stat-mic">—</dd></div>
+        </dl>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast__stack" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+#check__page{
+  min-height:100vh;padding:120px 22px 60px;display:flex;align-items:flex-start;justify-content:center;
+}
+#check__card{
+  display:grid;grid-template-columns:minmax(0,600px) 300px;gap:22px;width:min(100%,940px);
+}
+#check__preview{
+  position:relative;aspect-ratio:16/9;background:#05070a;border:1px solid var(--border-strong);
+  border-radius:18px;overflow:hidden;box-shadow:var(--shadow-lg);
+}
+#video{width:100%;height:100%;object-fit:cover;background:#05070a}
+
+.cam-status{
+  position:absolute;top:14px;left:50%;transform:translateX(-50%);margin:0;
+  background:rgba(18,21,27,.86);backdrop-filter:blur(10px);color:var(--text);
+  padding:8px 16px;border-radius:999px;font-size:12.5px;border:1px solid var(--border-strong);
+}
+.cam-status--error{color:#ffd6d6;border-color:rgba(255,92,92,.5);background:rgba(255,92,92,.16)}
+.cam-status--success{color:#c8fce4;border-color:rgba(61,220,151,.4)}
+
+#level-meter{
+  position:absolute;bottom:14px;left:14px;right:14px;height:6px;border-radius:999px;
+  background:rgba(255,255,255,.12);overflow:hidden;
+}
+#level-meter span{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--cyan),var(--success));transition:width .08s linear}
+
+#check__panel{
+  background:var(--surface);border:1px solid var(--border-strong);border-radius:18px;padding:24px;
+  box-shadow:var(--shadow-lg);
+}
+#check__panel h1{margin:0 0 6px;font-size:20px}
+.check__lede{margin:0 0 20px;color:var(--muted);font-size:12.5px;line-height:1.55}
+
+.device-label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin:0 0 6px}
+.device-select{
+  width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:#0c0f14;
+  color:var(--text);margin-bottom:14px;outline:none;
+}
+.device-select:focus{border-color:rgba(245,166,35,.7)}
+
+.webcam-start-stop{display:flex;gap:10px;margin:6px 0 4px}
+.webcam-start-stop .btn{flex:1}
+
+#stream-stats{margin:18px 0 0;padding-top:16px;border-top:1px solid var(--border)}
+#stream-stats div{display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:12.5px}
+#stream-stats dt{margin:0;color:var(--muted)}
+#stream-stats dd{margin:0;font-family:var(--font-mono);color:var(--cyan-2)}
+
+@media(max-width:900px){
+  #check__card{grid-template-columns:1fr}
+  #check__page{padding-top:96px}
+}

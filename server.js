@@ -10,8 +10,17 @@ const io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 3000;
+const PUBLIC_DIR = path.join(__dirname, "public");
 
-app.use(express.static(__dirname));
+app.use(express.static(PUBLIC_DIR));
+
+app.get("/healthz", (req, res) => {
+  res.json({
+    status: "ok",
+    uptimeSeconds: Math.round(process.uptime()),
+    rooms: io.sockets.adapter.rooms.size
+  });
+});
 
 io.on("connection", (socket) => {
   socket.on("join-room", ({ roomId, uid, displayName }) => {
@@ -93,6 +102,18 @@ io.on("connection", (socket) => {
     });
   });
 
+  socket.on("reaction", ({ emoji }) => {
+    if (!socket.data.roomId || !emoji) return;
+    const ALLOWED = new Set(["👍", "🎉", "❤️", "😂", "👏", "✋"]);
+    if (!ALLOWED.has(emoji)) return;
+
+    io.to(socket.data.roomId).emit("reaction", {
+      uid: socket.data.uid,
+      displayName: socket.data.displayName,
+      emoji
+    });
+  });
+
   socket.on("leave-room", () => {
     leave(socket);
   });
@@ -133,3 +154,14 @@ function leave(socket) {
 server.listen(PORT, () => {
   console.log(`WebRTC server running at http://localhost:${PORT}`);
 });
+
+function shutdown(signal) {
+  console.log(`\n${signal} received, closing server…`);
+  io.close();
+  server.close(() => process.exit(0));
+  // Force-exit if sockets don't close in time.
+  setTimeout(() => process.exit(1), 5000).unref();
+}
+
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));

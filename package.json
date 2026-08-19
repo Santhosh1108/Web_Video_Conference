@@ -1,15 +1,25 @@
 {
-  "name": "webrtc-video-conference",
-  "version": "1.0.0",
+  "name": "meetflow",
+  "version": "2.0.0",
   "private": true,
-  "description": "Multi-user WebRTC video conferencing with Socket.IO signaling",
+  "description": "MeetFlow — peer-to-peer video conferencing with native WebRTC and a thin Socket.IO signaling server.",
   "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "lint": "eslint . --ext .js",
+    "check": "node --check server.js && for f in public/js/*.js public/check/*.js test/*.js; do node --check \"$f\" || exit 1; done",
+    "test": "node test/signaling.test.js"
   },
   "dependencies": {
     "express": "^5.1.0",
     "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "eslint": "^9.13.0",
+    "socket.io-client": "^4.8.3"
   }
 }

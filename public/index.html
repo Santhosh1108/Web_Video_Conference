@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="theme-color" content="#0a0c10" />
+    <meta name="description" content="MeetFlow — fast, no-signup video meetings powered by native WebRTC and Socket.IO." />
+    <link rel="shortcut icon" href="images/logo.png" type="image/png" />
+    <title>MeetFlow — Video meetings that just work</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" media="screen" href="styles/main.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="styles/lobby.css" />
+  </head>
+  <body>
+    <header id="nav">
+      <div class="nav--list">
+        <a href="index.html">
+          <h3 id="logo">
+            <svg class="logo-mark" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect width="32" height="32" rx="9" fill="url(#g)" />
+              <rect x="8" y="15" width="3" height="9" rx="1.5" fill="#0a0c10" />
+              <rect x="14.5" y="9" width="3" height="15" rx="1.5" fill="#0a0c10" />
+              <rect x="21" y="12" width="3" height="12" rx="1.5" fill="#0a0c10" />
+              <defs>
+                <linearGradient id="g" x1="0" y1="0" x2="32" y2="32">
+                  <stop stop-color="#f5a623" />
+                  <stop offset="1" stop-color="#2dd4d6" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <span>MeetFlow</span>
+          </h3>
+        </a>
+      </div>
+
+      <div id="nav__links">
+        <a class="nav__link" href="check/index.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 10V5H3v14h14v-5l4 4V6l-4 4z" />
+          </svg>
+          Test camera
+        </a>
+        <a class="nav__link" id="create__room__btn" href="#form__container">
+          Start a meeting
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6 13h-5v5h-2v-5h-5v-2h5v-5h2v5h5v2z" />
+          </svg>
+        </a>
+      </div>
+    </header>
+
+    <main id="lobby">
+      <section class="hero">
+        <p class="hero-eyebrow">Peer-to-peer · No signup · Open source</p>
+        <h1>Video meetings that <em>just work</em>, in one tab.</h1>
+        <p class="lede">
+          MeetFlow connects people directly over WebRTC — your camera and mic stream
+          straight to the other participants, with a tiny Socket.IO server only handling
+          the initial handshake. No accounts, no downloads, no per-minute billing.
+        </p>
+
+        <div class="hero-stats">
+          <div class="hero-stat"><strong>&lt; 2s</strong><span>Median connect time</span></div>
+          <div class="hero-stat"><strong>P2P</strong><span>Media never touches our server</span></div>
+          <div class="hero-stat"><strong>0</strong><span>Accounts required</span></div>
+        </div>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            </div>
+            <h3>Screen sharing</h3>
+            <p>Swap your camera track for your screen mid-call, one click to switch back.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4M8 22h8"/></svg>
+            </div>
+            <h3>Live speaking indicator</h3>
+            <p>Real mic-level analysis highlights whoever is actually talking — not a guess.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <h3>In-call chat</h3>
+            <p>Text chat and a live participant list travel over the same socket connection.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7.093v-5.093h-3v2.093l3 3zM12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0"/></svg>
+            </div>
+            <h3>Camera pre-check</h3>
+            <p>Test your device and pick the right camera/mic before you ever join a room.</p>
+          </div>
+        </div>
+      </section>
+
+      <div id="form__container">
+        <div id="form__container__header">
+          <p><img src="images/logo.png" alt="" height="30" width="45" /> Create or join a room</p>
+          <span>Pick a room name and share it — anyone with the name and link can join.</span>
+        </div>
+
+        <form id="lobby__form" novalidate>
+          <div class="form__field__wrapper">
+            <label for="display-name">Your name</label>
+            <input
+              id="display-name"
+              type="text"
+              name="name"
+              required
+              maxlength="30"
+              autocomplete="name"
+              placeholder="Enter your display name…"
+            />
+          </div>
+
+          <div class="form__field__wrapper">
+            <label for="room-name">Room name</label>
+            <input
+              id="room-name"
+              type="text"
+              name="room"
+              maxlength="40"
+              autocomplete="off"
+              placeholder="Leave blank to generate one…"
+            />
+            <span class="field-hint">Leave this empty to start a brand-new room with a random code.</span>
+          </div>
+
+          <div class="form__field__wrapper">
+            <button type="submit">
+              <span id="submit-label">Continue to preview</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+                <path d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z" />
+              </svg>
+            </button>
+          </div>
+        </form>
+
+        <p class="form-footnote">You'll land on a preview screen with your camera before anyone can see or hear you.</p>
+      </div>
+    </main>
+
+    <div id="toast__stack" aria-live="polite"></div>
+  </body>
+  <script type="text/javascript" src="js/lobby.js"></script>
+</html>
